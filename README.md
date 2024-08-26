@@ -22,7 +22,7 @@ The solution is organized into the following projects:
 ### Installation
 1. Clone the repository:
    ```bash```
-   git clone https://github.com/yourusername/LibraryManagementSystem.git
+   git clone https://github.com/shilpb20/LibraryManagementSystem.git
 
 2. Navigate to the project directory:
    ```bash```
