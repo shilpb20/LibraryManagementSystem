@@ -1,9 +1,9 @@
 # Library Management System
 
 ## Overview
-The **Library Management System** is a RESTful Web API developed using .NET Core. This project simulates a real-world library system where users can manage a collection of books, authors, and members, as well as handle borrowing and returning of books.
+The **Library Management System** is a RESTful Web API developed using .NET Core. It simulates a real-world library system, allowing users to manage books, authors, members, and handle borrowing and returning of books.
 
-This project is designed to showcase my skills in C# and .NET Core, following best practices such as TDD, Dependency Injection, and SOLID principles. The goal is to build a maintainable, scalable, and testable application.
+This project showcases skills in C# and .NET Core, incorporating best practices such as TDD, Dependency Injection, and SOLID principles to build a maintainable, scalable, and testable application.
 
 ## Project Structure
 The solution is organized into the following projects:
