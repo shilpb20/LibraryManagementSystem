@@ -22,26 +22,78 @@ namespace LibraryManagementSystem.Tests.Repository
             _authorRepository = new Repository<Author>(_context);
         }
 
-        [Fact]
-        public async Task AddAuthor_ValidObject_AddsSuccessfully()
+        private Author CreateAuthor()
         {
-            //Arrange
-            //Act
-            var author = new Author()
+            return new Author()
             {
                 Id = 1,
                 Name = "Simon Sinek"
             };
+        }
+
+        [Fact]
+        public async Task AddAsync_ValidObject_AddsSuccessfully()
+        {
+            //Arrange
+            //Act
+            Author author = CreateAuthor();
 
             await _authorRepository.AddAsync(author);
 
             //Assert
-            Author addedObject = await _context.Authors.FirstOrDefaultAsync(x => x.Name == author.Name);
+            Author? addedObject = await _context.Authors.FirstOrDefaultAsync(x => x.Name == author.Name);
 
             addedObject.Should().NotBeNull();
             addedObject?.Id.Should().Be(author.Id);
             addedObject?.Name.Should().Be(author.Name);
+        }
 
+
+
+        [Fact]
+        public async Task GetAsync_MatchingData_ReturnesMatchingObject()
+        {
+            //Arrange
+            //Act
+            Author author = CreateAuthor();
+
+            await _authorRepository.AddAsync(author);
+
+            //Assert
+            var addedObject = await _authorRepository.GetAsync(x => ((Author)x).Name == author.Name);
+
+            addedObject.Should().NotBeNull();
+            addedObject?.Id.Should().Be(author.Id);
+            addedObject?.Name.Should().Be(author.Name);
+        }
+
+        [Fact]
+        public async Task GetAsync_NoCondition_ThrowsArgumentNullException()
+        {
+            //Arrange
+            //Act
+            Author author = CreateAuthor();
+
+            await _authorRepository.AddAsync(author);
+
+            //Assert
+            Func<Task> taskResult = async () => await _authorRepository.GetAsync(null);
+            await taskResult.Should().ThrowAsync<ArgumentNullException>();
+        }
+
+        [Fact]
+        public async Task GetAsync_NoMatchingData_ReturnsNull()
+        {
+            //Arrange
+            //Act
+            Author author = CreateAuthor();
+
+            await _authorRepository.AddAsync(author);
+
+            //Assert
+            var addedObject = await _authorRepository.GetAsync(x => ((Author)x).Name == "abc");
+
+            addedObject.Should().BeNull();
         }
     }
 }
