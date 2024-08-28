@@ -10,7 +10,7 @@ namespace LibraryManagementSystem.Tests.Repository
     public class AuthorRepositoryTests : TestBase
     {
         private readonly ApplicationDbContext _context;
-        private readonly AuthorRepository _authorRepository;
+        private readonly IRepository<Author> _authorRepository;
 
         public AuthorRepositoryTests(ITestOutputHelper outputHelper) : base(outputHelper)
         {
@@ -19,7 +19,7 @@ namespace LibraryManagementSystem.Tests.Repository
                 .Options;
 
             _context = new ApplicationDbContext(dbContextOptions);
-            _authorRepository = new AuthorRepository(_context);
+            _authorRepository = new Repository<Author>(_context);
         }
 
         [Fact]
