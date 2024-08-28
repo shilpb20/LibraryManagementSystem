@@ -21,7 +21,17 @@ namespace LibraryManagementSystem.Infrastructure.Repository
             await SaveChangesAsync();
         }
 
-        public async Task<T> GetAsync(Expression<Func<object, bool>> filter)
+        public async Task<List<T>> GetAllAsync(Expression<Func<T, bool>> filter = null)
+        {
+            if(filter == null)
+            {
+                return await _dataSet.ToListAsync();
+            }
+
+           return await _dataSet.Where(filter).ToListAsync();
+        }
+
+        public async Task<T?> GetAsync(Expression<Func<T, bool>> filter)
         {
             var result = await _dataSet.FirstOrDefaultAsync(filter);
             return result as T;
