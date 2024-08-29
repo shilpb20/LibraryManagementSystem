@@ -7,7 +7,7 @@ using Xunit.Abstractions;
 
 namespace LibraryManagementSystem.Tests.Repository
 {
-    public class AuthorRepositoryTests : TestBase
+    public class RepositoryTests : TestBase
     {
         #region fields-and-properties
 
@@ -19,7 +19,7 @@ namespace LibraryManagementSystem.Tests.Repository
 
         #region constructors-and-initialisors
 
-        public AuthorRepositoryTests(ITestOutputHelper outputHelper) : base(outputHelper)
+        public RepositoryTests(ITestOutputHelper outputHelper) : base(outputHelper)
         {
             Console.WriteLine("Setup: Initializing resources.");
 
@@ -73,7 +73,7 @@ namespace LibraryManagementSystem.Tests.Repository
         }
 
         [Fact]
-        public async Task AddAsync_DuplicateObject_DuplicateCheck_ReturnsNull()
+        public async Task AddAsync_DuplicateObject_WithDuplicateCheck_ReturnsNull()
         {
             //Arrange
             //Act
@@ -87,7 +87,7 @@ namespace LibraryManagementSystem.Tests.Repository
         }
 
         [Fact]
-        public async Task AddAsync_DuplicateObject_NoCheck_ThrowsException()
+        public async Task AddAsync_DuplicateObject_NoCheck_ThrowsArgumentException()
         {
             //Arrange
             //Act
@@ -96,8 +96,17 @@ namespace LibraryManagementSystem.Tests.Repository
             await _authorRepository.AddAsync(author, x => x.Name == author.Name);
 
             //Assert
-            await FluentActions.Invoking(() => _authorRepository.AddAsync(author)).Should().ThrowAsync<InvalidOperationException>();
+            await FluentActions.Invoking(() => _authorRepository.AddAsync(author)).Should().ThrowAsync<ArgumentException>();
 
+        }
+
+        [Fact]
+        public async Task AddAsync_NullObject_ThrowsArgumentNullException()
+        {
+            //Arrange
+            //Act
+            //Assert
+            await FluentActions.Invoking(() => _authorRepository.AddAsync(null)).Should().ThrowAsync<ArgumentNullException>();
         }
 
         #endregion
@@ -242,6 +251,15 @@ namespace LibraryManagementSystem.Tests.Repository
                 .Should().ThrowAsync<InvalidOperationException>();
         }
 
+        [Fact]
+        public async Task RemoveAsync_NullObject_ThrowsArgumentNullException()
+        {
+            //Arrange
+            //Act
+            //Assert
+            await FluentActions.Invoking(() => _authorRepository.RemoveAsync(null)).Should().ThrowAsync<ArgumentNullException>();
+        }
+
         #endregion
 
         #region update-async
@@ -260,12 +278,16 @@ namespace LibraryManagementSystem.Tests.Repository
             };
 
             //Act
+            DateTime timeBeforeUpdate = DateTime.UtcNow;
             var result = await _authorRepository.UpdateAsync(author.Id, updatedAuthor);
          
             //Assert
             result.Should().NotBeNull();
             result?.Id.Should().Be(updatedAuthor.Id);
             result?.Name.Should().Be(updatedAuthor.Name);
+
+            result?.LastModifiedAt.Should().BeAfter(timeBeforeUpdate);
+            result?.LastModifiedAt.Should().Be(updatedAuthor.LastModifiedAt);
         }
 
         [Fact]
@@ -328,6 +350,15 @@ namespace LibraryManagementSystem.Tests.Repository
                 .Should().ThrowAsync<InvalidOperationException>();
         }
 
+        [Fact]
+        public async Task UpdateAsync_NullObject_ThrowsArgumentNullException()
+        {
+            //Arrange
+            //Act
+            //Assert
+            await FluentActions.Invoking(() => _authorRepository.UpdateAsync(1, null)).Should().ThrowAsync<ArgumentNullException>();
+        }
+                                                                               
         #endregion
 
         #endregion

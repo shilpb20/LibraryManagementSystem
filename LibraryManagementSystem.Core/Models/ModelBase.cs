@@ -8,5 +8,13 @@ namespace LibraryManagementSystem.Core.Models
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
+
+        public DateTime CreatedAt { get; private set; } = DateTime.UtcNow;
+        public DateTime LastModifiedAt { get; private set; } = DateTime.UtcNow;
+
+        public void UpdateLastModifiedTime()
+        {
+            LastModifiedAt = DateTime.Now;
+        }
     }
 }
