@@ -15,13 +15,40 @@ namespace LibraryManagementSystem.Infrastructure.Repository
             _dataSet = _dbContext.Set<T>();
         }
 
-        public async Task AddAsync(T author)
+        public async Task<T?> AddAsync(T entity,
+            Expression<Func<T, bool>>? duplicateCheck = null)
         {
-            await _dbContext.AddAsync(author);
-            await SaveChangesAsync();
+            if(duplicateCheck == null)
+            {
+                try
+                {
+                    return await AddSync(entity);
+                }
+                catch
+                {
+                    throw new InvalidOperationException("Cannot add item. Check if duplicate.");
+                }
+            }
+            else
+            {
+                var duplicateObject = await _dataSet.FirstOrDefaultAsync(duplicateCheck);
+                if(duplicateObject != null)
+                {
+                    return null;
+                }
+
+                return await AddSync(entity);
+            }
         }
 
-        public async Task<List<T>> GetAllAsync(Expression<Func<T, bool>> filter = null)
+        private async Task<T?> AddSync(T entity)
+        {
+            var entry = await _dbContext.AddAsync(entity);
+            await SaveChangesAsync();
+            return entry.Entity;
+        }
+
+        public async Task<List<T>> GetAllAsync(Expression<Func<T, bool>>? filter = null)
         {
             if(filter == null)
             {
