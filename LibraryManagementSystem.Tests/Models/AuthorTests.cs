@@ -35,14 +35,18 @@ namespace LibraryManagementSystem.Tests.Models
         {
             //Arrange
             //Act
-            Author author = CreateAuthor(x => x.Biography = "");
+            Author author = new Author()
+            {
+                Id = _id,
+                Name = _authorName
+            };
 
             //Assert
             author.Should().NotBeNull();
             author.Id.Should().Be(_id);
             author.Name.Should().Be(_authorName);
-            author.Biography.Should().BeNull();
-        }
+            author.Biography.Should().BeNullOrEmpty();
+       }
 
         [Fact]
         public void CreateAuthor_Id_NoInitialization_PassesValidation()

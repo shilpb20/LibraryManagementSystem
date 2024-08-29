@@ -11,6 +11,7 @@ namespace LibraryManagementSystem.Tests.Repository
     {
         #region fields-and-properties
 
+        private readonly List<Author> _authors;
         private readonly ApplicationDbContext _context;
         private readonly IRepository<Author> _authorRepository;
 
@@ -20,66 +21,19 @@ namespace LibraryManagementSystem.Tests.Repository
 
         public AuthorRepositoryTests(ITestOutputHelper outputHelper) : base(outputHelper)
         {
+            Console.WriteLine("Setup: Initializing resources.");
+
             var dbContextOptions = new DbContextOptionsBuilder<ApplicationDbContext>()
                 .UseInMemoryDatabase(databaseName: "LibraryManagementSystem_Api_Test")
                 .Options;
 
             _context = new ApplicationDbContext(dbContextOptions);
             _authorRepository = new Repository<Author>(_context);
+             _context.Database.EnsureCreated();
+
+            _authors = _context.Authors.ToList();
         }
 
-        #endregion
-
-        #region utility-methods
-
-        private async Task<List<Author>> AddAuthorsToRepository()
-        {
-            var authors = AuthorList;
-            foreach (var author in authors)
-            {
-                var matchingEntities = await _authorRepository.GetAsync(x => x.Name == author.Name);
-                if (matchingEntities != null)
-                    continue;
-
-                await _authorRepository.AddAsync(author);
-            }
-
-            return authors;
-        }
-
-        private static List<Author> AuthorList = new List<Author>()
-        {
-            new Author()
-                {
-                    Id = 1,
-                    Name = "Simon Sinek"
-                },
-            new Author()
-                {
-                    Id = 2,
-                    Name = "Malcolm Gladwell"
-                },
-                new Author()
-                {
-                    Id = 3,
-                    Name = "Daniel Pink"
-                },
-                new Author()
-                {
-                    Id = 4,
-                    Name = "Brené Brown"
-                },
-                new Author()
-                {
-                    Id = 5,
-                    Name = "Adam Grant"
-                },
-                new Author()
-                {
-                    Id = 6,
-                    Name = "Jim Collins"
-                }
-        };
 
         #endregion
 
@@ -92,11 +46,7 @@ namespace LibraryManagementSystem.Tests.Repository
         {
             //Arrange
             //Act
-            Author author = new Author()
-            {
-                Id = 7,
-                Name = "James Clear"
-            };
+            Author author = GetDanBrown();
 
             var result = await _authorRepository.AddAsync(author);
 
@@ -110,11 +60,7 @@ namespace LibraryManagementSystem.Tests.Repository
         {
             //Arrange
             //Act
-            Author author = new Author()
-            {
-                Id = 8,
-                Name = "Angela Duckworth"
-            };
+            Author author = GetAngelaDuckworth();
 
             var result = await _authorRepository.AddAsync(author, x => x.Name == author.Name);
 
@@ -131,12 +77,9 @@ namespace LibraryManagementSystem.Tests.Repository
         {
             //Arrange
             //Act
-            Author author = new Author()
-            {
-                Id = 8,
-                Name = "Angela Duckworth"
-            };
+            Author author = GetAngelaDuckworth();
 
+            await _authorRepository.AddAsync(author, x => x.Name == author.Name);
             var result = await _authorRepository.AddAsync(author, x => x.Name == author.Name);
 
             //Assert
@@ -148,16 +91,12 @@ namespace LibraryManagementSystem.Tests.Repository
         {
             //Arrange
             //Act
-            Author author = new Author()
-            {
-                Id = 8,
-                Name = "Angela Duckworth"
-            };
+            Author author = GetAngelaDuckworth();
 
             await _authorRepository.AddAsync(author, x => x.Name == author.Name);
 
             //Assert
-           await FluentActions.Invoking(() => _authorRepository.AddAsync(author)).Should().ThrowAsync<InvalidOperationException>();
+            await FluentActions.Invoking(() => _authorRepository.AddAsync(author)).Should().ThrowAsync<InvalidOperationException>();
 
         }
 
@@ -171,8 +110,7 @@ namespace LibraryManagementSystem.Tests.Repository
         {
             //Arrange
             //Act
-            await AddAuthorsToRepository();
-            var author = AuthorList.First();
+            var author = _authors.First();
             var addedObject = await _authorRepository.GetAsync(x => x.Name == author.Name);
 
             //Assert
@@ -186,7 +124,7 @@ namespace LibraryManagementSystem.Tests.Repository
         {
             //Arrange
             //Act
-            Author author = AuthorList.First();
+            Author author = _authors.First();
 
             //Assert
             Func<Task> taskResult = async () => await _authorRepository.GetAsync(null);
@@ -198,7 +136,7 @@ namespace LibraryManagementSystem.Tests.Repository
         {
             //Arrange
             //Act
-            Author author = AuthorList.First();
+            Author author = _authors.First();
 
             //Assert
             var addedObject = await _authorRepository.GetAsync(x => x.Name == "abc");
@@ -214,7 +152,7 @@ namespace LibraryManagementSystem.Tests.Repository
         {
             //Arrange
             //Act
-            List<Author> authors = await AddAuthorsToRepository();
+            //List<Author> authors = await AddAuthorsToRepository();
 
             //Assert
             var allAuthors = await _authorRepository.GetAllAsync();
@@ -240,7 +178,9 @@ namespace LibraryManagementSystem.Tests.Repository
         {
             //Arrange
             //Act
-            List<Author> authors = await AddAuthorsToRepository();
+            //List<Author> authors = await AddAuthorsToRepository();
+
+            List<Author> authors = await _context.Authors.ToListAsync();
             var matchingAuthors = authors.Where(x => x.Name.Contains('a')).ToList();
 
             //Assert
@@ -270,48 +210,35 @@ namespace LibraryManagementSystem.Tests.Repository
         public async Task RemoveAsync_ValidObject_DeletesSuccessfully()
         {
             //Arrange
-            await AddAuthorsToRepository();
+            Author lastObject = _context.Authors.OrderByDescending(x => x.Id).First();
+
+            lastObject.Should().NotBeNull();
 
             //Act
-            Author author = new Author()
-            {
-                Id = 7,
-                Name = "James Clear"
-            };
+            var result = await _authorRepository.RemoveAsync(lastObject);
 
-            await _authorRepository.AddAsync(author, x => x.Name == author.Name);
-
-            var matchingObject = await _authorRepository.GetAsync(x => x.Name == author.Name);
-            matchingObject.Should().NotBeNull();
-            matchingObject?.Id.Should().Be(author.Id);
-            matchingObject?.Name.Should().Be(author.Name);
-
-            var result = await _authorRepository.RemoveAsync(author);
+            //Assert
             result.Should().NotBeNull();
-            result?.Id.Should().Be(author.Id);
-            result?.Name.Should().Be(author.Name);
 
-            var matchingObjectAfterRemoval = await _authorRepository.GetAsync(x => x.Name == author.Name);
-            matchingObjectAfterRemoval.Should().BeNull();
+            Author newLastObject = _context.Authors.OrderByDescending(x => x.Id).First();
+            lastObject.Id.Should().BeGreaterThan(newLastObject.Id);
         }
 
         [Fact]
         public async Task RemoveAsync_InvalidObject_ThrowsInvalidOperationException()
         {
             //Arrange
-            await AddAuthorsToRepository();
+            var author = _context.Authors.OrderByDescending(x => x.Id).First();
 
-            //Act
-            Author author = new Author()
+            var invalidAuthor = new Author()
             {
-                Id = 10,
-                Name = "Uknown Author"
+                Id = author.Id + 1,
+                Name = "Author not presennt"
             };
 
-            var matchingObject = await _authorRepository.GetAsync(x => x.Name == author.Name);
-            matchingObject.Should().BeNull();
-
-            await FluentActions.Invoking(() => _authorRepository.RemoveAsync(author))
+            //Act
+            //Assert
+            await FluentActions.Invoking(() => _authorRepository.RemoveAsync(invalidAuthor))
                 .Should().ThrowAsync<InvalidOperationException>();
         }
 
@@ -323,29 +250,19 @@ namespace LibraryManagementSystem.Tests.Repository
         public async Task UpdateAsync_ValidObject_UpdatesSuccessfully()
         {
             //Arrange
-            await AddAuthorsToRepository();
-
-            //Act
-            Author author = new Author()
-            {
-                Id = 7,
-                Name = "James Clear"
-            };
+            Author author = _authors.First();
+            author.Should().NotBeNull();
 
             Author updatedAuthor = new Author()
             {
-                Id = 7,
-                Name = "James Hunt"
+                Id = author.Id,
+                Name = string.Concat(author.Name, "-modified")
             };
 
-            await _authorRepository.AddAsync(author, x => x.Name == author.Name);
-
-            var matchingObject = await _authorRepository.GetAsync(x => x.Name == author.Name);
-            matchingObject.Should().NotBeNull();
-            matchingObject?.Id.Should().Be(author.Id);
-            matchingObject?.Name.Should().Be(author.Name);
-
+            //Act
             var result = await _authorRepository.UpdateAsync(author.Id, updatedAuthor);
+         
+            //Assert
             result.Should().NotBeNull();
             result?.Id.Should().Be(updatedAuthor.Id);
             result?.Name.Should().Be(updatedAuthor.Name);
@@ -355,29 +272,19 @@ namespace LibraryManagementSystem.Tests.Repository
         public async Task UpdateAsync_NoModification_UpdatesSuccessfully()
         {
             //Arrange
-            await AddAuthorsToRepository();
-
-            //Act
-            Author author = new Author()
-            {
-                Id = 7,
-                Name = "James Clear"
-            };
+            Author author = _authors.First();
+            author.Should().NotBeNull();
 
             Author updatedAuthor = new Author()
             {
-                Id = 7,
-                Name = "James Clear"
+                Id = author.Id,
+                Name = author.Name
             };
 
-            await _authorRepository.AddAsync(author, x => x.Name == author.Name);
-
-            var matchingObject = await _authorRepository.GetAsync(x => x.Name == author.Name);
-            matchingObject.Should().NotBeNull();
-            matchingObject?.Id.Should().Be(author.Id);
-            matchingObject?.Name.Should().Be(author.Name);
-
+            //Act
             var result = await _authorRepository.UpdateAsync(author.Id, updatedAuthor);
+            
+            //Assert
             result.Should().NotBeNull();
             result?.Id.Should().Be(author.Id);
             result?.Name.Should().Be(author.Name);
@@ -387,28 +294,17 @@ namespace LibraryManagementSystem.Tests.Repository
         public async Task UpdateAsync_IdModification_ThrowsInvalidOperationException()
         {
             //Arrange
-            await AddAuthorsToRepository();
-
-            //Act
-            Author author = new Author()
-            {
-                Id = 7,
-                Name = "James Clear"
-            };
+            Author author = _authors.First();
+            author.Should().NotBeNull();
 
             Author updatedAuthor = new Author()
             {
-                Id = 8,
-                Name = "James Clear"
+                Id = author.Id + 1,
+                Name = author.Name
             };
 
-            await _authorRepository.AddAsync(author, x => x.Name == author.Name);
-
-            var matchingObject = await _authorRepository.GetAsync(x => x.Name == author.Name);
-            matchingObject.Should().NotBeNull();
-            matchingObject?.Id.Should().Be(author.Id);
-            matchingObject?.Name.Should().Be(author.Name);
-
+            //Act
+            //Assert
             await FluentActions.Invoking(() => _authorRepository.UpdateAsync(author.Id, updatedAuthor))
                 .Should().ThrowAsync<InvalidOperationException>();
         }
@@ -416,13 +312,12 @@ namespace LibraryManagementSystem.Tests.Repository
         [Fact]
         public async Task UpdateAsync_InvalidObject_ThrowsInvalidOperationException()
         {
-            //Arrange
-            await AddAuthorsToRepository();
-
             //Act
+            var lastItem = _context.Authors.OrderByDescending(x => x.Id).First();
+           
             Author author = new Author()
             {
-                Id = 10,
+                Id = lastItem.Id + 1,
                 Name = "Uknown Author"
             };
 
@@ -434,6 +329,28 @@ namespace LibraryManagementSystem.Tests.Repository
         }
 
         #endregion
+
+        #endregion
+
+        #region utility-methods
+
+        Author GetDanBrown()
+        {
+            return new Author()
+            {
+                Id = 10,
+                Name = "Dan Brown"
+            };
+        }
+
+        Author GetAngelaDuckworth()
+        {
+            return new Author()
+            {
+                Id = 11,
+                Name = "Angela Duckworth"
+            };
+        }
 
         #endregion
     }

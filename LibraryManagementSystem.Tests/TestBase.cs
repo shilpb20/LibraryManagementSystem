@@ -4,7 +4,7 @@ using Xunit.Abstractions;
 
 namespace LibraryManagementSystem.Tests
 {
-    public class TestBase
+    public abstract class TestBase
     {
         protected ITestOutputHelper _outputHelper;
 

@@ -6,6 +6,6 @@ namespace LibraryManagementSystem.Core.Models
     {
         [Required]
         public string Name { get; set; }
-        public string Biography { get; set; }
+        public string Biography { get; set; } = string.Empty;
     }
 }
