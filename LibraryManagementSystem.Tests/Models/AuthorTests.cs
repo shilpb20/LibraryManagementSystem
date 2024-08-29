@@ -8,6 +8,7 @@ namespace LibraryManagementSystem.Tests.Models
     {
         private readonly int _id = 1;
         private readonly string _authorName = "Author 1";
+        private readonly string _biography = "Sample author biography..";
 
         private const string errorMessage_NameField_Required = "The Name field is required.";    
 
@@ -17,7 +18,7 @@ namespace LibraryManagementSystem.Tests.Models
         }
 
         [Fact]
-        public void CreateAuthor_ValidObject_CreatesSuccessfully()
+        public void CreateAuthor_ValidObject_InitializeAllProperties_CreatesSuccessfully()
         {
             //Arrange
             //Act
@@ -30,35 +31,50 @@ namespace LibraryManagementSystem.Tests.Models
         }
 
         [Fact]
-        public void CreateAuthor_MissingIdInitialization_PassesValidation()
+        public void CreateAuthor_ValidObject_InitializeOnlyRequiredProperties_CreatesSuccessfully()
+        {
+            //Arrange
+            //Act
+            Author author = CreateAuthor(x => x.Biography = "");
+
+            //Assert
+            author.Should().NotBeNull();
+            author.Id.Should().Be(_id);
+            author.Name.Should().Be(_authorName);
+            author.Biography.Should().BeNull();
+        }
+
+        [Fact]
+        public void CreateAuthor_Id_NoInitialization_PassesValidation()
         {
             //Arrange
             //Act
             Author author = new Author()
             {
                 Name = _authorName,
+                Biography = _biography
             };
 
             //Assert
             author.Should().NotBeNull();
-            var validationResult = ValidateAndAssert(author, true);
+            ValidateAndAssert(author, true);
         }
 
         [Fact]
-        public void CreateAuthor_MissingNamenitialization_FailsValidation()
+        public void CreateAuthor_Name_NoInitialization_FailsValidation()
         {
             //Arrange
             //Act
             Author author = new Author()
             {
                 Id = _id,
+                Biography = _biography
             };
 
             //Assert
             author.Should().NotBeNull();
-            var validationResult = ValidateAndAssert(author, false);
+            ValidateAndAssert(author, false);        }
 
-        }
 
         [Theory]
         [InlineData(1)]
@@ -85,7 +101,8 @@ namespace LibraryManagementSystem.Tests.Models
             var author = new Author()
             {
                 Id = _id,
-                Name = name
+                Name = name, 
+                Biography = _biography
             };
 
             _outputHelper.WriteLine($"String length - {author.Name.Length}");
@@ -100,7 +117,8 @@ namespace LibraryManagementSystem.Tests.Models
             var author = new Author()
             {
                 Id = _id,
-                Name = _authorName
+                Name = _authorName,
+                Biography = _biography
             };
 
             setup?.Invoke(author);

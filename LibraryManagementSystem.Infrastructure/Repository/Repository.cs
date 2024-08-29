@@ -22,7 +22,7 @@ namespace LibraryManagementSystem.Infrastructure.Repository
             {
                 try
                 {
-                    return await AddSync(entity);
+                    return await AddAsync(entity);
                 }
                 catch
                 {
@@ -37,11 +37,11 @@ namespace LibraryManagementSystem.Infrastructure.Repository
                     return null;
                 }
 
-                return await AddSync(entity);
+                return await AddAsync(entity);
             }
         }
 
-        private async Task<T> AddSync(T entity)
+        private async Task<T> AddAsync(T entity)
         {
             var entry = await _dbContext.AddAsync(entity);
             await SaveChangesAsync();
