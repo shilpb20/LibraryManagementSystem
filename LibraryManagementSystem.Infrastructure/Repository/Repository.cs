@@ -1,7 +1,6 @@
 ﻿using LibraryManagementSystem.Core.Models;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
-using System.Security.Cryptography.X509Certificates;
 
 namespace LibraryManagementSystem.Infrastructure.Repository
 {
@@ -42,7 +41,7 @@ namespace LibraryManagementSystem.Infrastructure.Repository
             }
         }
 
-        private async Task<T?> AddSync(T entity)
+        private async Task<T> AddSync(T entity)
         {
             var entry = await _dbContext.AddAsync(entity);
             await SaveChangesAsync();
@@ -65,17 +64,31 @@ namespace LibraryManagementSystem.Infrastructure.Repository
             return result as T;
         }
 
-        public async Task<T?> RemoveAsync(T entity)
+        public async Task<T> RemoveAsync(T entity)
         {
             var result = await _dataSet.FindAsync(entity.Id);
             if (result == null)
-                return null;
+                throw new InvalidOperationException();
 
             _dataSet.Remove(result);
             await SaveChangesAsync();
             return result;
         }
 
+        public async Task<T> UpdateAsync(int id, T entity)
+        {
+            if (id != entity.Id)
+                throw new InvalidOperationException();
+
+            var existingEntity = await _dataSet.FindAsync(id);
+            if(existingEntity == null)
+                throw new InvalidOperationException();
+
+            _dbContext.Entry(existingEntity).CurrentValues.SetValues(entity);
+            await SaveChangesAsync();
+            return existingEntity;
+        }
+ 
         public async Task SaveChangesAsync()
         {
             await _dbContext.SaveChangesAsync();

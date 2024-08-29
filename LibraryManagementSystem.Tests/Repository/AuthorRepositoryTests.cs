@@ -296,7 +296,7 @@ namespace LibraryManagementSystem.Tests.Repository
         }
 
         [Fact]
-        public async Task RemoveAsync_InvalidObject_ReturnsNull()
+        public async Task RemoveAsync_InvalidObject_ThrowsInvalidOperationException()
         {
             //Arrange
             await AddAuthorsToRepository();
@@ -311,8 +311,126 @@ namespace LibraryManagementSystem.Tests.Repository
             var matchingObject = await _authorRepository.GetAsync(x => x.Name == author.Name);
             matchingObject.Should().BeNull();
 
-            var result = await _authorRepository.RemoveAsync(author);
-            result.Should().BeNull();
+            await FluentActions.Invoking(() => _authorRepository.RemoveAsync(author))
+                .Should().ThrowAsync<InvalidOperationException>();
+        }
+
+        #endregion
+
+        #region update-async
+
+        [Fact]
+        public async Task UpdateAsync_ValidObject_UpdatesSuccessfully()
+        {
+            //Arrange
+            await AddAuthorsToRepository();
+
+            //Act
+            Author author = new Author()
+            {
+                Id = 7,
+                Name = "James Clear"
+            };
+
+            Author updatedAuthor = new Author()
+            {
+                Id = 7,
+                Name = "James Hunt"
+            };
+
+            await _authorRepository.AddAsync(author, x => x.Name == author.Name);
+
+            var matchingObject = await _authorRepository.GetAsync(x => x.Name == author.Name);
+            matchingObject.Should().NotBeNull();
+            matchingObject?.Id.Should().Be(author.Id);
+            matchingObject?.Name.Should().Be(author.Name);
+
+            var result = await _authorRepository.UpdateAsync(author.Id, updatedAuthor);
+            result.Should().NotBeNull();
+            result?.Id.Should().Be(updatedAuthor.Id);
+            result?.Name.Should().Be(updatedAuthor.Name);
+        }
+
+        [Fact]
+        public async Task UpdateAsync_NoModification_UpdatesSuccessfully()
+        {
+            //Arrange
+            await AddAuthorsToRepository();
+
+            //Act
+            Author author = new Author()
+            {
+                Id = 7,
+                Name = "James Clear"
+            };
+
+            Author updatedAuthor = new Author()
+            {
+                Id = 7,
+                Name = "James Clear"
+            };
+
+            await _authorRepository.AddAsync(author, x => x.Name == author.Name);
+
+            var matchingObject = await _authorRepository.GetAsync(x => x.Name == author.Name);
+            matchingObject.Should().NotBeNull();
+            matchingObject?.Id.Should().Be(author.Id);
+            matchingObject?.Name.Should().Be(author.Name);
+
+            var result = await _authorRepository.UpdateAsync(author.Id, updatedAuthor);
+            result.Should().NotBeNull();
+            result?.Id.Should().Be(author.Id);
+            result?.Name.Should().Be(author.Name);
+        }
+
+        [Fact]
+        public async Task UpdateAsync_IdModification_ThrowsInvalidOperationException()
+        {
+            //Arrange
+            await AddAuthorsToRepository();
+
+            //Act
+            Author author = new Author()
+            {
+                Id = 7,
+                Name = "James Clear"
+            };
+
+            Author updatedAuthor = new Author()
+            {
+                Id = 8,
+                Name = "James Clear"
+            };
+
+            await _authorRepository.AddAsync(author, x => x.Name == author.Name);
+
+            var matchingObject = await _authorRepository.GetAsync(x => x.Name == author.Name);
+            matchingObject.Should().NotBeNull();
+            matchingObject?.Id.Should().Be(author.Id);
+            matchingObject?.Name.Should().Be(author.Name);
+
+            await FluentActions.Invoking(() => _authorRepository.UpdateAsync(author.Id, updatedAuthor))
+                .Should().ThrowAsync<InvalidOperationException>();
+        }
+
+        [Fact]
+        public async Task UpdateAsync_InvalidObject_ThrowsInvalidOperationException()
+        {
+            //Arrange
+            await AddAuthorsToRepository();
+
+            //Act
+            Author author = new Author()
+            {
+                Id = 10,
+                Name = "Uknown Author"
+            };
+
+            var matchingObject = await _authorRepository.GetAsync(x => x.Name == author.Name);
+            matchingObject.Should().BeNull();
+
+            await FluentActions.Invoking(() => _authorRepository.UpdateAsync(author.Id, author))
+                .Should().ThrowAsync<InvalidOperationException>();
         }
 
         #endregion

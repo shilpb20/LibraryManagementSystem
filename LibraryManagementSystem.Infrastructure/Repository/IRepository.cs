@@ -9,7 +9,8 @@ namespace LibraryManagementSystem.Infrastructure.Repository
 
         Task<List<T>> GetAllAsync(Expression<Func<T, bool>>? filter = null);
         Task<T?> GetAsync(Expression<Func<T, bool>> filter);
-        Task<T?> RemoveAsync(T entity);
+        Task<T> RemoveAsync(T entity);
         Task SaveChangesAsync();
+        Task<T> UpdateAsync(int id, T entity);
     }
 }
