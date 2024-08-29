@@ -1,13 +1,14 @@
 ﻿using LibraryManagementSystem.Core.Models;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
+using System.Runtime.CompilerServices;
 
 namespace LibraryManagementSystem.Infrastructure.Repository
 {
     public class Repository<T> : IRepository<T> where T : ModelBase
     {
-        private ApplicationDbContext _dbContext;
-        private DbSet<T> _dataSet;
+        private readonly ApplicationDbContext _dbContext;
+        private readonly DbSet<T> _dataSet;
 
         public Repository(ApplicationDbContext context)
         {
@@ -16,33 +17,19 @@ namespace LibraryManagementSystem.Infrastructure.Repository
         }
 
         public async Task<T?> AddAsync(T entity,
-            Expression<Func<T, bool>>? duplicateCheck = null)
+            Expression<Func<T, bool>>? duplicateCheckBeforeAdd = null)
         {
-            if (duplicateCheck == null)
+            CheckNullEntity(entity);
+
+            if (duplicateCheckBeforeAdd != null)
             {
-                try
-                {
-                    return await AddAsync(entity);
-                }
-                catch
-                {
-                    throw new InvalidOperationException("Cannot add item. Check if duplicate.");
-                }
-            }
-            else
-            {
-                var duplicateObject = await _dataSet.FirstOrDefaultAsync(duplicateCheck);
+                var duplicateObject = await _dataSet.FirstOrDefaultAsync(duplicateCheckBeforeAdd);
                 if (duplicateObject != null)
                 {
                     return null;
                 }
-
-                return await AddAsync(entity);
             }
-        }
 
-        private async Task<T> AddAsync(T entity)
-        {
             var entry = await _dbContext.AddAsync(entity);
             await SaveChangesAsync();
             return entry.Entity;
@@ -66,9 +53,11 @@ namespace LibraryManagementSystem.Infrastructure.Repository
 
         public async Task<T> RemoveAsync(T entity)
         {
+            CheckNullEntity(entity);
+
             var result = await _dataSet.FindAsync(entity.Id);
             if (result == null)
-                throw new InvalidOperationException();
+                throw new InvalidOperationException($"Entity with Id: {entity.Id} not found");
 
             _dataSet.Remove(result);
             await SaveChangesAsync();
@@ -77,12 +66,16 @@ namespace LibraryManagementSystem.Infrastructure.Repository
 
         public async Task<T> UpdateAsync(int id, T entity)
         {
+            CheckNullEntity(entity);
+
             if (id != entity.Id)
-                throw new InvalidOperationException();
+                throw new InvalidOperationException("Entity Id mismatch during update.");
 
             var existingEntity = await _dataSet.FindAsync(id);
             if(existingEntity == null)
-                throw new InvalidOperationException();
+                throw new InvalidOperationException($"Entity with Id : {entity.Id} not found");
+
+            entity.UpdateLastModifiedTime();
 
             _dbContext.Entry(existingEntity).CurrentValues.SetValues(entity);
             await SaveChangesAsync();
@@ -92,6 +85,14 @@ namespace LibraryManagementSystem.Infrastructure.Repository
         public async Task SaveChangesAsync()
         {
             await _dbContext.SaveChangesAsync();
+        }
+
+        private void CheckNullEntity(T entity)
+        {
+            if (entity == null)
+            {
+                throw new ArgumentNullException(nameof(entity), "Entity cannot be null");
+            }
         }
     }
 }

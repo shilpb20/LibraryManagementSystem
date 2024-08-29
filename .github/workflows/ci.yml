@@ -1,12 +1,8 @@
-name: CI
+name: .NET Core CI
 
 on:
   push:
-    branches:
-      - develop
   pull_request:
-    branches:
-      - develop
 
 jobs:
   build:
@@ -16,16 +12,35 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v3
 
-    - name: Set up .NET
+    - name: Setup .NET
       uses: actions/setup-dotnet@v3
       with:
-        dotnet-version: '8.x'
+        dotnet-version: '7.0.x'
 
-    - name: Restore dependencies
+    - name: Install dependencies
       run: dotnet restore
 
     - name: Build
-      run: dotnet build --no-restore
+      run: dotnet build --no-restore --configuration Release
 
-    - name: Run tests
-      run: dotnet test --no-build --verbosity normal
+    - name: Run tests with coverage
+      run: dotnet test --no-build --configuration Release --collect:"XPlat Code Coverage"
+
+    - name: Install ReportGenerator
+      run: dotnet tool install -g dotnet-reportgenerator-globaltool
+
+    - name: Generate coverage report
+      run: |
+        reportgenerator "-reports:**/coverage.cobertura.xml" "-targetdir:coverage" -reporttypes:Html
+
+    - name: Upload coverage report
+      uses: actions/upload-artifact@v3
+      with:
+        name: coverage-report
+        path: coverage
+
+    - name: Coveralls
+      uses: coverallsapp/github-action@v2.2.0
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        path-to-lcov: coverage/lcov.info
