@@ -264,6 +264,59 @@ namespace LibraryManagementSystem.Tests.Repository
 
         #endregion
 
+        #region delete-async
+
+        [Fact]
+        public async Task RemoveAsync_ValidObject_DeletesSuccessfully()
+        {
+            //Arrange
+            await AddAuthorsToRepository();
+
+            //Act
+            Author author = new Author()
+            {
+                Id = 7,
+                Name = "James Clear"
+            };
+
+            await _authorRepository.AddAsync(author, x => x.Name == author.Name);
+
+            var matchingObject = await _authorRepository.GetAsync(x => x.Name == author.Name);
+            matchingObject.Should().NotBeNull();
+            matchingObject?.Id.Should().Be(author.Id);
+            matchingObject?.Name.Should().Be(author.Name);
+
+            var result = await _authorRepository.RemoveAsync(author);
+            result.Should().NotBeNull();
+            result?.Id.Should().Be(author.Id);
+            result?.Name.Should().Be(author.Name);
+
+            var matchingObjectAfterRemoval = await _authorRepository.GetAsync(x => x.Name == author.Name);
+            matchingObjectAfterRemoval.Should().BeNull();
+        }
+
+        [Fact]
+        public async Task RemoveAsync_InvalidObject_ReturnsNull()
+        {
+            //Arrange
+            await AddAuthorsToRepository();
+
+            //Act
+            Author author = new Author()
+            {
+                Id = 10,
+                Name = "Uknown Author"
+            };
+
+            var matchingObject = await _authorRepository.GetAsync(x => x.Name == author.Name);
+            matchingObject.Should().BeNull();
+
+            var result = await _authorRepository.RemoveAsync(author);
+            result.Should().BeNull();
+        }
+
+        #endregion
+
         #endregion
     }
 }

@@ -1,10 +1,11 @@
 ﻿using LibraryManagementSystem.Core.Models;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
+using System.Security.Cryptography.X509Certificates;
 
 namespace LibraryManagementSystem.Infrastructure.Repository
 {
-    public class Repository<T> : IRepository<T> where T : class
+    public class Repository<T> : IRepository<T> where T : ModelBase
     {
         private ApplicationDbContext _dbContext;
         private DbSet<T> _dataSet;
@@ -18,7 +19,7 @@ namespace LibraryManagementSystem.Infrastructure.Repository
         public async Task<T?> AddAsync(T entity,
             Expression<Func<T, bool>>? duplicateCheck = null)
         {
-            if(duplicateCheck == null)
+            if (duplicateCheck == null)
             {
                 try
                 {
@@ -32,7 +33,7 @@ namespace LibraryManagementSystem.Infrastructure.Repository
             else
             {
                 var duplicateObject = await _dataSet.FirstOrDefaultAsync(duplicateCheck);
-                if(duplicateObject != null)
+                if (duplicateObject != null)
                 {
                     return null;
                 }
@@ -50,18 +51,29 @@ namespace LibraryManagementSystem.Infrastructure.Repository
 
         public async Task<List<T>> GetAllAsync(Expression<Func<T, bool>>? filter = null)
         {
-            if(filter == null)
+            if (filter == null)
             {
                 return await _dataSet.ToListAsync();
             }
 
-           return await _dataSet.Where(filter).ToListAsync();
+            return await _dataSet.Where(filter).ToListAsync();
         }
 
         public async Task<T?> GetAsync(Expression<Func<T, bool>> filter)
         {
             var result = await _dataSet.FirstOrDefaultAsync(filter);
             return result as T;
+        }
+
+        public async Task<T?> RemoveAsync(T entity)
+        {
+            var result = await _dataSet.FindAsync(entity.Id);
+            if (result == null)
+                return null;
+
+            _dataSet.Remove(result);
+            await SaveChangesAsync();
+            return result;
         }
 
         public async Task SaveChangesAsync()
