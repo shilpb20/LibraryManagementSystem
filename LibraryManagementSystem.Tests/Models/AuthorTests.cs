@@ -61,7 +61,10 @@ namespace LibraryManagementSystem.Tests.Models
 
             //Assert
             author.Should().NotBeNull();
-            ValidateAndAssert(author, true);
+            ValidateObject(author);
+
+            var result = ValidateObject(author);
+            AssertValidationResults(result, true);
         }
 
         [Fact]
@@ -77,7 +80,10 @@ namespace LibraryManagementSystem.Tests.Models
 
             //Assert
             author.Should().NotBeNull();
-            ValidateAndAssert(author, false);        }
+            
+            var result = ValidateObject(author);
+            AssertValidationResults(result, false);       
+        }
 
 
         [Theory]
@@ -92,7 +98,9 @@ namespace LibraryManagementSystem.Tests.Models
 
             //Assert
             author.Should().NotBeNull();
-            ValidateAndAssert(author, true);
+
+            var result = ValidateObject(author);
+            AssertValidationResults(result, true);
         }
 
         [Theory]
@@ -113,7 +121,9 @@ namespace LibraryManagementSystem.Tests.Models
 
             //Assert
             author.Should().NotBeNull();
-            ValidateAndAssert(author, false);
+
+            var result = ValidateObject(author);
+            AssertValidationResults(result, false);
         }
 
         private Author CreateAuthor(Action<Author>? setup = null)

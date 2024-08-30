@@ -274,7 +274,8 @@ namespace LibraryManagementSystem.Tests.Repository
             Author updatedAuthor = new Author()
             {
                 Id = author.Id,
-                Name = string.Concat(author.Name, "-modified")
+                Name = string.Concat(author.Name, "-modified"),
+                Biography = string.Concat(author.Biography, "-modified")
             };
 
             //Act
@@ -285,10 +286,29 @@ namespace LibraryManagementSystem.Tests.Repository
             result.Should().NotBeNull();
             result?.Id.Should().Be(updatedAuthor.Id);
             result?.Name.Should().Be(updatedAuthor.Name);
+            result?.Biography.Should().Be(updatedAuthor.Biography);
 
             result?.LastModifiedAt.Should().BeAfter(timeBeforeUpdate);
             result?.LastModifiedAt.Should().Be(updatedAuthor.LastModifiedAt);
         }
+
+        [Fact]
+        public async Task UpdateAsync_UpdateOnlySpecificField_UpdatesCorrectly()
+        {
+            //Arrange
+            Author author = _authors.First();
+            string originalBiography = author.Biography;
+            string updatedName = author.Name + " Updated";
+
+            //Act
+            author.Name = updatedName;
+            var result = await _authorRepository.UpdateAsync(author.Id, author);
+
+            //Assert
+            result.Name.Should().Be(updatedName);
+            result.Biography.Should().Be(originalBiography);
+        }
+
 
         [Fact]
         public async Task UpdateAsync_NoModification_UpdatesSuccessfully()

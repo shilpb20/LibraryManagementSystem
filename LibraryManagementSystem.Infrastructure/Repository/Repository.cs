@@ -75,9 +75,9 @@ namespace LibraryManagementSystem.Infrastructure.Repository
             if(existingEntity == null)
                 throw new InvalidOperationException($"Entity with Id : {entity.Id} not found");
 
-            entity.UpdateLastModifiedTime();
-
             _dbContext.Entry(existingEntity).CurrentValues.SetValues(entity);
+            existingEntity.UpdateLastModifiedTime();
+
             await SaveChangesAsync();
             return existingEntity;
         }
