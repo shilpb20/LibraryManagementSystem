@@ -14,7 +14,7 @@ namespace LibraryManagementSystem.Core.Models
 
         public void UpdateLastModifiedTime()
         {
-            LastModifiedAt = DateTime.Now;
+            LastModifiedAt = DateTime.UtcNow;
         }
     }
 }

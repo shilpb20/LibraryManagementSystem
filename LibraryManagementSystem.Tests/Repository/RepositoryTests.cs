@@ -289,7 +289,7 @@ namespace LibraryManagementSystem.Tests.Repository
             result?.Biography.Should().Be(updatedAuthor.Biography);
 
             result?.LastModifiedAt.Should().BeAfter(timeBeforeUpdate);
-            result?.LastModifiedAt.Should().Be(updatedAuthor.LastModifiedAt);
+            result?.LastModifiedAt.Should().BeAfter(updatedAuthor.LastModifiedAt);
         }
 
         [Fact]

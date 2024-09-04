@@ -9,9 +9,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LibraryManagementSystem.Cor
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LibraryManagementSystem.Infrastructure", "LibraryManagementSystem.Infrastructure\LibraryManagementSystem.Infrastructure.csproj", "{81246B3B-C0C8-41CE-8B31-18E0F86D60A9}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LibraryManagementSystem.UnitTests", "LibraryManagementSystem.Tests\LibraryManagementSystem.UnitTests.csproj", "{7C0CA4C4-8E6D-4A23-9236-986A74B3FD13}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LibraryManagementSystem.Tests.Unit", "LibraryManagementSystem.Tests\LibraryManagementSystem.Tests.Unit.csproj", "{7C0CA4C4-8E6D-4A23-9236-986A74B3FD13}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LibraryManagementSystem.IntegrationTests", "LibraryManagementSystem.IntegrationTests\LibraryManagementSystem.IntegrationTests.csproj", "{D6DCFA23-7929-407C-85D9-0E9D8F96F8F6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LibraryManagementSystem.Tests.Integration", "LibraryManagementSystem.IntegrationTests\LibraryManagementSystem.Tests.Integration.csproj", "{D6DCFA23-7929-407C-85D9-0E9D8F96F8F6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
